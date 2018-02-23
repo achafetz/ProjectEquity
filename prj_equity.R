@@ -20,7 +20,7 @@
 # OPERATING UNITS ------------------------------------------------------------------------------------------
   #countries each week of RPM
   
-  ous_wk1 <- c("Botswana", "Cameroon", "Democratic Republic of the Congo", "Lesotho", "Namibia", "Nigeria", 
+  ous_wk1 <- c("Botswana", "Cameroon", "DRC", "Lesotho", "Namibia", "Nigeria", 
                "South Sudan", "Swaziland", "Uganda", "Zambia", "Zimbabwe")
   ous_wk2 <- c("Burundi", "Cote d'Ivoire", "Ethiopia", "Haiti", "Kenya", "Malawi", "Mozambique", 
                "South Africa", "Tanzania", "Ukraine", "Vietnam")
@@ -61,10 +61,10 @@
   #source: FACTSInfo via A.Johnson (Feb 20, 2018)
   
 #import week 1
-  df_budget_wk1 <- read_excel(here("Data", "RPM M&O.xlsx"), sheet = "Week1 Sans commodities", skip = 2)
+  df_budget_wk1 <- read_excel(here("Data", "RPM M&O.xlsx"), sheet = "Week1 Original request", skip = 2)
   
 #import week 2
-  df_budget_wk2 <- read_excel(here("Data", "RPM M&O.xlsx"), sheet = "Week2 Sans commodities", skip = 2)
+  df_budget_wk2 <- read_excel(here("Data", "RPM M&O.xlsx"), sheet = "Week2 Original request", skip = 2)
 
 
 ## COMBINE DATASET ----------------------------------------------------------------------------------
@@ -101,10 +101,12 @@
     group_by(wk, fundingagency) %>% 
     summarise_at(vars(starts_with("cop17") ), ~ sum(., na.rm = TRUE)) %>% 
     ungroup() %>% 
-    mutate(operatingunit = paste("Week", wk, "OUs", sep = " "))
+    mutate(operatingunit = paste("Week", wk, "OUs", sep = " "), 
+           cop17_mo_share = cop17_mo/cop17_funds_tot)
 
-#append and reorder
-  df_combo <- bind_rows(df_combo, df_combo_total)
+#append
+  df_combo <- bind_rows(df_combo, df_combo_total) %>% 
+    select(wk, everything())
     rm(df_combo_total)
 
 ## EXPORT --------------------------------------------------------------------------------------------
