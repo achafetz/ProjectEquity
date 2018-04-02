@@ -21,8 +21,15 @@ library(scales)
 
   #table - overall
     staffing %>% 
+      filter(Cycle == "2018 COP") %>% 
       count(fundingagency_consol, sort = TRUE) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
+  #table - overall, over time
+    staffing %>% 
+      count(fundingagency_consol, Cycle, sort = TRUE) %>% 
+      spread(Cycle, n) %>% 
+      kable(format.args = list(big.mark = ",", zero.print = FALSE))
+    
   #table - by employment type 
     staffing %>% 
       count(fundingagency_consol, Employment_Type) %>% 

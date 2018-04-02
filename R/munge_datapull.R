@@ -76,6 +76,9 @@ library(fs)
 
   #export
     write_rds(copmatrix, here("Output", "cop_matrix.Rds"))
+    
+  
+ ###   copmatrix_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
 
 # Staffing Data -----------------------------------------------------------
 
