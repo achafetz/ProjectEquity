@@ -34,7 +34,7 @@ library(fs)
              fundingagency_3      = `Agency (3)`)
     
   #factor to order in tables/viz
-    #levels_agency_consol <- c("USAID", "HHS/CDC ", "PC", "State", "DOD", "HHS/Other")
+    #levels_agency_consol <- c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other")
     #agency_mapping$fundingagency_consol <- factor(agency_mapping$fundingagency_consol, levels = levels_agency_consol)
       #rm(levels_agency_consol)
 
