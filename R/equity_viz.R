@@ -105,10 +105,13 @@ library(scales)
      copmatrix %>% 
        filter(COP == "2018 COP", MechanismIdentifier != "0") %>% 
        count(OperatingUnit, fundingagency_consol) %>%
-       mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>%
-       ggplot(aes(OperatingUnit, n)) +
+       group_by(fundingagency_consol) %>% 
+       mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0),
+              order_usaid = ifelse(fundingagency_consol == "USAID", dense_rank(n), 0)) %>% 
+       ungroup() %>%
+       ggplot(aes(reorder(OperatingUnit, order_usaid), n)) +
          geom_col(aes(fill = usaid), show.legend = FALSE) +
          scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
          coord_flip() +
          facet_grid(. ~ fundingagency_consol) +
-         labs(x = "", y = "# of mechanisms", caption = "COP18")
+         labs(title = "Mechanisms Supported by Agency", x = "", y = "# of mechanisms", caption = "COP18")
