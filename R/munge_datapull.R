@@ -31,12 +31,9 @@ library(fs)
       rename(fundingagency        = `Agency (Full)`,
              fundingagency_abbr   = `Agency (Abbrev)`,
              fundingagency_consol = `Agency (Consolidated)`,
-             fundingagency_3      = `Agency (3)`)
-    
-  #factor to order in tables/viz
-    #levels_agency_consol <- c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other")
-    #agency_mapping$fundingagency_consol <- factor(agency_mapping$fundingagency_consol, levels = levels_agency_consol)
-      #rm(levels_agency_consol)
+             fundingagency_3      = `Agency (3)`) %>% 
+      mutate(fundingagency_consol = factor(fundingagency_consol, 
+                                            levels = c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other")))
 
 # COP Matrix --------------------------------------------------------------
 
@@ -78,7 +75,7 @@ library(fs)
     write_rds(copmatrix, here("Output", "cop_matrix.Rds"))
     
   
- ###   copmatrix_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
+# copmatrix_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
 
 # Staffing Data -----------------------------------------------------------
 
