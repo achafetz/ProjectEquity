@@ -97,7 +97,8 @@ library(fs)
   #rename OU/funding agency to be used across data sources
     staffing <- staffing %>% 
       rename(OperatingUnit = Operating_Unit,
-             fundingagency = Funding_Agency) %>% 
+             fundingagency = Funding_Agency,
+             COP = Cycle) %>% 
       select(-Agency_Abbrev, -Agency_Consolidated)
   
   #merge

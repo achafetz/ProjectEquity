@@ -27,31 +27,31 @@ codb <- read_rds("Output/codb.Rds")
 
   #table - overall
     staffing %>% 
-      filter(Cycle == "2018 COP") %>% 
+      filter(COP == "2018 COP") %>% 
       count(fundingagency_consol, sort = TRUE) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
   #table - overall, over time
     staffing %>% 
-      count(fundingagency_consol, Cycle, sort = TRUE) %>% 
-      spread(Cycle, n) %>% 
+      count(fundingagency_consol, COP, sort = TRUE) %>% 
+      spread(COP, n) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
     
   #table - by employment type 
     staffing %>% 
-      filter(Cycle == "2018 COP") %>% 
+      filter(COP == "2018 COP") %>% 
       count(fundingagency_consol, Employment_Type) %>% 
       spread(Employment_Type, n) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
   #table - by position type
     staffing %>% 
-      filter(Cycle == "2018 COP") %>% 
+      filter(COP == "2018 COP") %>% 
       count(fundingagency_consol, Position_Type) %>% 
       spread(fundingagency_consol, n) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
     
   #viz - overall  
     staffing %>%
-      filter(Cycle == "2018 COP") %>% 
+      filter(COP == "2018 COP") %>% 
       count(fundingagency_consol, Employment_Type) %>% 
       ggplot(aes(reorder(Employment_Type, n), n)) +
         geom_col() +
@@ -62,7 +62,7 @@ codb <- read_rds("Output/codb.Rds")
    #viz - by employment type
     staffing %>% 
       count(fundingagency_consol, Employment_Type) %>%
-      filter(Cycle == "2018 COP") %>% 
+      filter(COP == "2018 COP") %>% 
       mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
       ggplot(aes(reorder(Employment_Type, n), n)) +
         geom_col(aes(fill = usaid), show.legend = FALSE) +
@@ -76,7 +76,7 @@ codb <- read_rds("Output/codb.Rds")
     #viz - by position type
      staffing %>% 
        count(fundingagency_consol, Position_Type) %>%
-       filter(Cycle == "2018 COP") %>% 
+       filter(COP == "2018 COP") %>% 
        mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
        ggplot(aes(reorder(Position_Type, n), n)) +
          geom_col(aes(fill = usaid), show.legend = FALSE) +
