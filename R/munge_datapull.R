@@ -147,25 +147,25 @@ library(fs)
   rm(agency_mapping)
 
 ############################################################################
-  # codb_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
-  # 
-  # #rename header without spaces or dashes
-  # names(codb_ptype) <- gsub(" |\\)", "", names(codb_ptype))
-  # names(codb_ptype) <- gsub("-", "_", names(codb_ptype))
-  # names(codb_ptype) <- gsub("\\(", "_", names(codb_ptype))
-  # 
-  # #rename funding agency to be used across data sources
-  # codb_ptype <- codb_ptype %>% 
-  #   rename(fundingagency = FundingAgency,
-  #          COP = Cycle)
-  # 
-  # #covert to correct column type and convert to zeros
-  # codb_ptype <- codb_ptype %>% 
-  #   mutate(MechanismIdentifier = as.character(MechanismIdentifier)) %>% 
-  #   mutate_if(is.numeric, ~ ifelse(. == 0, NA, .))
-  # 
-  # #merge
-  # codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
+  codb_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
+
+  #rename header without spaces or dashes
+  names(codb_ptype) <- gsub(" |\\)", "", names(codb_ptype))
+  names(codb_ptype) <- gsub("-", "_", names(codb_ptype))
+  names(codb_ptype) <- gsub("\\(", "_", names(codb_ptype))
+
+  #rename funding agency to be used across data sources
+  codb_ptype <- codb_ptype %>%
+    rename(fundingagency = FundingAgency,
+           COP = Cycle)
+
+  #covert to correct column type and convert to zeros
+  codb_ptype <- codb_ptype %>%
+    mutate(MechanismIdentifier = as.character(MechanismIdentifier)) %>%
+    mutate_if(is.numeric, ~ ifelse(. == 0, NA, .))
+
+  #merge
+  codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
   
   ## COMPARE
   # codb_ptype %>% 
