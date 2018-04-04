@@ -7,11 +7,18 @@
 
 # Dependencies ------------------------------------------------------------
 
+library(here)
 library(tidyverse)
 library(skimr)
 library(knitr)
 library(scales)
 
+
+# Open Datasets -----------------------------------------------------------
+
+staffing <- read_rds("Output/staffing.Rds")
+copmatrix <- read_rds("Output/copmatrix.Rds")
+codb <- read_rds("Output/codb.Rds")
 
 # 1. broad M&O categories for all agencies individually -------------------
 
@@ -115,3 +122,188 @@ library(scales)
          coord_flip() +
          facet_grid(. ~ fundingagency_consol) +
          labs(title = "Mechanisms Supported by Agency", x = "", y = "# of mechanisms", caption = "COP18")
+
+
+# 3a. M&O - % overall budget ----------------------------------------------
+
+  #table - global
+    copmatrix %>% 
+      filter(COP == "2018 COP") %>% 
+      group_by(fundingagency_consol) %>% 
+      summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                   sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+      ungroup() %>% 
+      mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>%
+      arrange(desc(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
+      kable(format.args = list(big.mark = ",", zero.print = FALSE))
+  
+  #table - by OU
+     copmatrix %>% 
+       filter(COP == "2018 COP") %>% 
+       group_by(OperatingUnit, fundingagency_consol) %>% 
+       summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                   sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+       ungroup() %>% 
+       filter(TotalPlannedAmountandAppliedPipelineAmount != 0) %>% 
+       group_by(OperatingUnit) %>% 
+       mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>%
+       ungroup() %>% 
+       arrange(OperatingUnit, desc(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
+       kable(format.args = list(big.mark = ",", zero.print = FALSE))   
+     
+  #viz - by OU
+     copmatrix %>% 
+       filter(COP == "2018 COP") %>% 
+       group_by(OperatingUnit, fundingagency_consol) %>% 
+       summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                   sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+       ungroup() %>% 
+       filter(TotalPlannedAmountandAppliedPipelineAmount != 0) %>% 
+       group_by(OperatingUnit) %>% 
+       mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount),
+              usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>%
+       ungroup() %>% 
+       ggplot(aes(reorder(OperatingUnit, share), share)) +
+         geom_col(aes(fill = usaid), show.legend = FALSE) +
+         scale_y_continuous(labels = percent) +
+         scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+         coord_flip() +
+         labs(x = "") +
+         facet_grid(. ~ fundingagency_consol)
+     
+# 3b. M&O - % M&O v % IM --------------------------------------------------
+     
+  #table - global
+     copmatrix %>% 
+       filter(COP == "2018 COP") %>% 
+       group_by(fundingagency_consol, RecordType) %>% 
+       summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                   sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+       ungroup() %>% 
+       group_by(fundingagency_consol) %>% 
+       mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
+       filter(RecordType == "Management and Operations", !is.na(fundingagency_consol)) %>% 
+       arrange(desc(share)) %>% 
+       kable(format.args = list(big.mark = ",", zero.print = FALSE))
+     
+  #table - by OU
+    copmatrix %>% 
+      filter(COP == "2018 COP") %>%
+      group_by(OperatingUnit, fundingagency_consol, RecordType) %>% 
+      summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                  sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+      ungroup() %>% 
+      group_by(OperatingUnit, fundingagency_consol) %>% 
+      mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
+      filter(RecordType == "Management and Operations", !is.na(fundingagency_consol)) %>% 
+      arrange(desc(share)) %>% 
+      kable(format.args = list(big.mark = ",", zero.print = FALSE))
+     
+  # viz by OU
+    copmatrix %>% 
+      filter(COP == "2018 COP") %>%
+      group_by(OperatingUnit, fundingagency_consol, RecordType) %>% 
+      summarise(TotalPlannedAmountandAppliedPipelineAmount = 
+                  sum(TotalPlannedAmountandAppliedPipelineAmount, na.rm = TRUE)) %>%
+      ungroup() %>% 
+      group_by(OperatingUnit, fundingagency_consol) %>% 
+      mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount),
+             usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
+      filter(RecordType == "Management and Operations", !is.na(fundingagency_consol)) %>% 
+      ggplot(aes(reorder(OperatingUnit, share), share)) +
+        geom_col(aes(fill = usaid), show.legend = FALSE) +
+        scale_y_continuous(labels = percent) +
+        scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+        coord_flip() +
+        facet_grid(. ~ fundingagency_consol)
+
+# 3c. M&O - subcategories -------------------------------------------------
+
+  #table - global
+    codb %>%
+      filter(COP == "2018 COP",
+             CostType %in% c("Institutional Contractors", 
+                             "Management Meetings/Professional Development", 
+                             "Peace Corps Volunteer Costs", "Staff Program Travel", 
+                             "USG Staff Salaries and Benefits", 
+                             "USG Staff Salaries and Benefits - Internationally  Recruited", 
+                             "USG Staff Salaries and Benefits - Locally Recruited")) %>% 
+      group_by(fundingagency_consol, CostType) %>% 
+      summarise(COPAmount = sum(COPAmount, na.rm = TRUE)) %>% 
+      ungroup() %>% 
+      filter(COPAmount != 0) %>% 
+      group_by(fundingagency_consol) %>% 
+      mutate(share = COPAmount / sum(COPAmount)) %>% 
+      ungroup()
+      
+  #table - by OU
+    codb %>%
+      filter(COP == "2018 COP",
+             CostType %in% c("Institutional Contractors", 
+                             "Management Meetings/Professional Development", 
+                             "Peace Corps Volunteer Costs", "Staff Program Travel", 
+                             "USG Staff Salaries and Benefits", 
+                             "USG Staff Salaries and Benefits - Internationally  Recruited", 
+                             "USG Staff Salaries and Benefits - Locally Recruited")) %>% 
+      group_by(OperatingUnit, fundingagency_consol, CostType) %>% 
+      summarise(COPAmount = sum(COPAmount, na.rm = TRUE)) %>% 
+      ungroup() %>% 
+      filter(COPAmount != 0) %>% 
+      group_by(OperatingUnit, fundingagency_consol) %>% 
+      mutate(share = COPAmount / sum(COPAmount)) %>% 
+      ungroup()
+
+  #viz - global
+    codb %>%
+      filter(COP == "2018 COP",
+             CostType %in% c("Institutional Contractors", 
+                             "Management Meetings/Professional Development", 
+                             "Peace Corps Volunteer Costs", "Staff Program Travel", 
+                             "USG Staff Salaries and Benefits", 
+                             "USG Staff Salaries and Benefits - Internationally  Recruited", 
+                             "USG Staff Salaries and Benefits - Locally Recruited")) %>% 
+      group_by(fundingagency_consol, CostType) %>% 
+      summarise(COPAmount = sum(COPAmount, na.rm = TRUE)) %>% 
+      ungroup() %>% 
+      filter(COPAmount != 0) %>% 
+      group_by(fundingagency_consol) %>% 
+      mutate(share = COPAmount / sum(COPAmount),
+             usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
+      ungroup() %>% 
+      ggplot(aes(reorder(CostType, share), share)) +
+      geom_col(aes(fill = usaid), show.legend = FALSE) +
+      scale_y_continuous(labels = percent) +
+      scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+      coord_flip() +
+      labs(x = "") +
+      facet_grid(. ~ fundingagency_consol)
+    
+    
+    
+  #viz - by OU
+    codb %>%
+      filter(COP == "2018 COP",
+             CostType %in% c("Institutional Contractors", 
+                             "Management Meetings/Professional Development", 
+                             "Peace Corps Volunteer Costs", "Staff Program Travel", 
+                             "USG Staff Salaries and Benefits", 
+                             "USG Staff Salaries and Benefits - Internationally  Recruited", 
+                             "USG Staff Salaries and Benefits - Locally Recruited")) %>% 
+      group_by(OperatingUnit, fundingagency_consol, CostType) %>% 
+      summarise(COPAmount = sum(COPAmount, na.rm = TRUE)) %>% 
+      ungroup() %>% 
+      filter(COPAmount != 0) %>% 
+      group_by(OperatingUnit, fundingagency_consol) %>% 
+      mutate(share = COPAmount / sum(COPAmount),
+             usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
+      ungroup() %>% 
+      ggplot(aes(reorder(OperatingUnit, share), share)) +
+        geom_col(aes(fill = usaid), show.legend = FALSE) +
+        scale_y_continuous(labels = percent) +
+        scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+        coord_flip() +
+        labs(x = "") +
+        facet_grid(CostType ~ fundingagency_consol)
+    
+     
+     
