@@ -61,8 +61,8 @@ codb <- read_rds("Output/codb.Rds")
     
    #viz - by employment type
     staffing %>% 
-      count(fundingagency_consol, Employment_Type) %>%
       filter(COP == "2018 COP") %>% 
+      count(fundingagency_consol, Employment_Type) %>%
       mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
       ggplot(aes(reorder(Employment_Type, n), n)) +
         geom_col(aes(fill = usaid), show.legend = FALSE) +
@@ -75,8 +75,8 @@ codb <- read_rds("Output/codb.Rds")
     
     #viz - by position type
      staffing %>% 
-       count(fundingagency_consol, Position_Type) %>%
        filter(COP == "2018 COP") %>% 
+       count(fundingagency_consol, Position_Type) %>%
        mutate(usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
        ggplot(aes(reorder(Position_Type, n), n)) +
          geom_col(aes(fill = usaid), show.legend = FALSE) +
