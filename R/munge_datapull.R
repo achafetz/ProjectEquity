@@ -72,7 +72,7 @@ library(fs)
     #   gather(budgetcode, total_planned_and_pipeline, HBHC:HVMS, na.rm = TRUE)
 
   #export
-    write_rds(copmatrix, here("Output", "cop_matrix.Rds"))
+    write_rds(copmatrix, here("Output", "copmatrix.Rds"))
     
   
 # copmatrix_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
@@ -116,12 +116,12 @@ library(fs)
         TRUE                                                  ~ Employment_Type
       ))
   #export
-    write_rds(copmatrix, here("Output", "staffing.Rds"))
+    write_rds(staffing, here("Output", "staffing.Rds"))
     
 # CODB --------------------------------------------------------------------
 
   #import
-    codb <- read_excel(here("Data", "COP15-18 Data 2018-03-23.xlsx"), sheet = "CODB Data", skip = 4)
+    codb <- read_excel(here("Data", "COP15-18 Data 2018-03-23.xlsx"), sheet = "CODB Data ", skip = 3)
   
   #rename header without spaces or dashes
     names(codb) <- gsub(" |\\)", "", names(codb))
@@ -130,18 +130,54 @@ library(fs)
   
   #rename funding agency to be used across data sources
     codb <- codb %>% 
-      rename(fundingagency = FundingAgency) %>% 
-      select(-Agency_Abbrev, -Agency_Consolidated)
+      rename(fundingagency = FundingAgency,
+             COP = Cycle)
   
   #merge
     codb <- left_join(codb, agency_mapping, by = "fundingagency")
     
   #reorder
     codb <- codb %>% 
-      select(OperatingUnit, fundingagency, fundingagency_abbr, 
+      select(OperatingUnit, COP, fundingagency, fundingagency_abbr, 
              fundingagency_consol,  fundingagency_3, everything()) 
   #export
     write_rds(codb, here("Output", "codb.Rds"))
   
   rm(agency_mapping)
+
+############################################################################
+  # codb_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
+  # 
+  # #rename header without spaces or dashes
+  # names(codb_ptype) <- gsub(" |\\)", "", names(codb_ptype))
+  # names(codb_ptype) <- gsub("-", "_", names(codb_ptype))
+  # names(codb_ptype) <- gsub("\\(", "_", names(codb_ptype))
+  # 
+  # #rename funding agency to be used across data sources
+  # codb_ptype <- codb_ptype %>% 
+  #   rename(fundingagency = FundingAgency,
+  #          COP = Cycle)
+  # 
+  # #covert to correct column type and convert to zeros
+  # codb_ptype <- codb_ptype %>% 
+  #   mutate(MechanismIdentifier = as.character(MechanismIdentifier)) %>% 
+  #   mutate_if(is.numeric, ~ ifelse(. == 0, NA, .))
+  # 
+  # #merge
+  # codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
+  
+  ## COMPARE
+  # codb_ptype %>% 
+  #   group_by(fundingagency_consol, COP) %>% 
+  #   summarise(PlannedAmount = sum(PlannedAmount, na.rm = TRUE)) %>% 
+  #   ungroup() %>% 
+  #   spread(COP, PlannedAmount)  %>% 
+  #   kable(format.args = list(big.mark = ",", zero.print = FALSE))
+  # 
+  # codb %>% 
+  #   group_by(fundingagency_consol, COP) %>% 
+  #   summarise(TotalPlanned = sum(TotalPlanned, na.rm = TRUE)) %>% 
+  #   ungroup() %>% 
+  #   spread(COP, TotalPlanned)  %>% 
+  #   kable(format.args = list(big.mark = ",", zero.print = FALSE))
   
