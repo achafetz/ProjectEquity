@@ -144,20 +144,29 @@ library(fs)
   #export
     write_rds(codb, here("Output", "codb.Rds"))
   
-  rm(agency_mapping)
 
-############################################################################
-  codb_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
 
+
+# CODB Procurement Type ---------------------------------------------------
+
+  #import
+    codb_ptype <- read_excel(here("Data", "Budget Code COP Matrix Report-Combined.xlsx"))
+    codb_ptype18 <- read_excel(here("Data", "Budget Code COP Matrix Report- COP 18.xlsx"), skip = 2) %>% 
+      rename(Cycle = COP, `Operating Unit` = OU)
+  
+  #append COP18 onto other years
+    codb_ptype <- bind_rows(codb_ptype, codb_ptype18)
+      rm(codb_ptype18)
+    
   #rename header without spaces or dashes
-  names(codb_ptype) <- gsub(" |\\)", "", names(codb_ptype))
-  names(codb_ptype) <- gsub("-", "_", names(codb_ptype))
-  names(codb_ptype) <- gsub("\\(", "_", names(codb_ptype))
+    names(codb_ptype) <- gsub(" |\\)", "", names(codb_ptype))
+    names(codb_ptype) <- gsub("-", "_", names(codb_ptype))
+    names(codb_ptype) <- gsub("\\(", "_", names(codb_ptype))
 
   #rename funding agency to be used across data sources
-  codb_ptype <- codb_ptype %>%
-    rename(fundingagency = FundingAgency,
-           COP = Cycle)
+    codb_ptype <- codb_ptype %>%
+      rename(fundingagency = FundingAgency,
+             COP = Cycle)
 
   #covert to correct column type and convert to zeros
   codb_ptype <- codb_ptype %>%
@@ -165,7 +174,13 @@ library(fs)
     mutate_if(is.numeric, ~ ifelse(. == 0, NA, .))
 
   #merge
-  codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
+    codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
+  
+  #export
+    write_rds(codb_ptype, here("Output", "codb_ptype.Rds"))
+  
+  rm(agency_mapping)
+  
   
   ## COMPARE
   # codb_ptype %>% 
