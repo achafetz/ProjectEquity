@@ -43,4 +43,4 @@ library(scales)
         coord_flip() +
         labs(y = "FY17 Expenditures (bil, USD)", x = "") +
         facet_grid(. ~ fundingagency_consol)
-    ggsave(here("Products", "prj_equity_q4c_exp.png"), width = 11, height = 6, units = "in")
+    ggsave(here("Products", "prj_equity_q4e_exp.png"), width = 11, height = 6, units = "in")
