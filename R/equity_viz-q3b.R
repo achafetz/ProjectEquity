@@ -44,6 +44,8 @@ copmatrix <- read_rds("Output/copmatrix.Rds")
       mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
       filter(RecordType == "Management and Operations", !is.na(fundingagency_consol)) %>% 
       arrange(desc(share)) %>% 
+      select(-TotalPlannedAmountandAppliedPipelineAmount) %>% 
+      spread(fundingagency_consol, share) %>% 
       kable(format.args = list(big.mark = ",", zero.print = FALSE))
   
   # viz by OU
@@ -61,5 +63,8 @@ copmatrix <- read_rds("Output/copmatrix.Rds")
       geom_col(aes(fill = usaid), show.legend = FALSE) +
       scale_y_continuous(labels = percent) +
       scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+      labs(x = "") +
       coord_flip() +
       facet_grid(. ~ fundingagency_consol)
+    ggsave(here("Products", "prj_equity_q3b_budget_moshare.png"), width = 11, height = 6, units = "in")
+    

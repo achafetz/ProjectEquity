@@ -56,3 +56,5 @@ codb_ptype <- read_rds("Output/codb_ptype.Rds")
       coord_flip() +
       facet_grid(. ~ fundingagency_consol) +
       labs(title = "Mechanisms Supported by Agency", x = "", y = "# of mechanisms", caption = "COP18")
+    ggsave(here("Products", "prj_equity_q2_mech_breakdown.png"), width = 11, height = 5, units = "in")
+    

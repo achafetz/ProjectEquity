@@ -35,7 +35,9 @@ codb <- read_rds("Output/codb.Rds")
       filter(COPAmount != 0) %>% 
       group_by(fundingagency_consol) %>% 
       mutate(share = COPAmount / sum(COPAmount)) %>% 
-      ungroup()
+      ungroup() %>% 
+      select(-COPAmount) %>% 
+      spread(CostType, share)
 
   #table - by OU
     codb %>%
@@ -72,10 +74,11 @@ codb <- read_rds("Output/codb.Rds")
              usaid = ifelse(fundingagency_consol == "USAID", 1, 0)) %>% 
       ungroup() %>% 
       ggplot(aes(reorder(CostType, share), share)) +
-      geom_col(aes(fill = usaid), show.legend = FALSE) +
-      scale_y_continuous(labels = percent) +
-      scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
-      coord_flip() +
-      labs(x = "") +
-      facet_grid(. ~ fundingagency_consol)
-
+        geom_col(aes(fill = usaid), show.legend = FALSE) +
+        scale_y_continuous(labels = percent) +
+        scale_fill_continuous(low = "#99c2eb", high = "#2166ac") +
+        coord_flip() +
+        labs(x = "") +
+        facet_grid(. ~ fundingagency_consol)
+    ggsave(here("Products", "prj_equity_q3c_budget_subcat_share.png"), width = 11, height = 6, units = "in")
+    

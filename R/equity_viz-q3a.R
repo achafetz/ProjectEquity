@@ -42,7 +42,9 @@ copmatrix <- read_rds("Output/copmatrix.Rds")
     group_by(OperatingUnit) %>% 
     mutate(share = TotalPlannedAmountandAppliedPipelineAmount / sum(TotalPlannedAmountandAppliedPipelineAmount)) %>%
     ungroup() %>% 
-    arrange(OperatingUnit, desc(TotalPlannedAmountandAppliedPipelineAmount)) %>% 
+    arrange(OperatingUnit, desc(TotalPlannedAmountandAppliedPipelineAmount)) %>%
+    select(-TotalPlannedAmountandAppliedPipelineAmount) %>% 
+    spread(fundingagency_consol, share) %>% 
     kable(format.args = list(big.mark = ",", zero.print = FALSE))   
   
   #viz - by OU
@@ -64,3 +66,7 @@ copmatrix <- read_rds("Output/copmatrix.Rds")
     coord_flip() +
     labs(x = "") +
     facet_grid(. ~ fundingagency_consol)
+  ggsave(here("Products", "prj_equity_q3a_budget_alloc.png"), width = 11, height = 5, units = "in")
+  
+  
+  

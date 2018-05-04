@@ -181,6 +181,70 @@ library(fs)
   
   rm(agency_mapping)
   
+
+# EA ----------------------------------------------------------------------
+
+  
+  #import EA file
+    ea <- read_rds("~/ICPI/Data/ICPI_EA_Structured_Dataset_PSNU_IM_20180110.Rds")
+  
+  # cost category groupings
+  
+    abv <- c("ProgMgmt", "StratInfo", "HlthSys", "Surveillance")
+    inv <- c("TR", "CONST_REN", "VEHI", "EQP_FURN", "INV_OTHEXP")
+    rec <- c("PERS", "ARV", "NONARV", "HIVTEST", "CONDOM", "OTHSUPPLY", "FOOD", "BLDGRENTAL", "TRVL", "REC_OTHEXP")
+    grp <- c(inv, rec)
+  
+  #clean up
+    ea <- ea %>% 
+      #subset dataset to just each mechanism's total
+      filter(data_type == "DIRECT",                                        #mech level = dup, rather than deduping at snu/ou level
+             ((type == "Expenditure" & disaggregate_category %in% grp) |
+                (disaggregate_category %in% abv)),      
+             fy17 !=0, !is.na(fy17)) %>%                                   #keep only mech reporting expenditure >$0 on any indicator
+      #adjustments to match MER data
+      rename(operatingunit = ou,
+             fundingagency_consol = mech_agency) %>%                                         
+      mutate(fundingagency_consol = case_when(
+                                fundingagency_consol == "DoD"               ~ "DOD",  
+                                fundingagency_consol == "USAID"             ~ "USAID",
+                                fundingagency_consol == "CDC"               ~ "HHS/CDC",
+                                fundingagency_consol == "Peace Corps"       ~ "PC",
+                                fundingagency_consol == "State_AF"          ~ "State",
+                                fundingagency_consol == "State_PRM"         ~ "State",
+                                fundingagency_consol == "State_EAP"         ~ "State",
+                                fundingagency_consol == "State_WHA"         ~ "State",
+                                       TRUE                                 ~ "HHS/Other"),
+             operatingunit = case_when(operatingunit == "CotedIvoire"       ~ "Cote d'Ivoire",
+                                       operatingunit == "DominicanRepublic" ~ "Dominican Republic",
+                                       operatingunit == "DRC"               ~ "Democratic Republic of the Congo",
+                                       operatingunit == "Guyana"            ~ "Caribbean Region",
+                                       operatingunit == "PapuaNewGuinea"    ~ "Papua New Guinea",
+                                       operatingunit == "SouthAfrica"       ~ "South Africa",
+                                       operatingunit == "SouthSudan"        ~ "South Sudan",
+                                       TRUE                                 ~ operatingunit),
+             maj_cc = case_when(disaggregate_category %in% rec              ~ "Site - Recurrent",
+                                disaggregate_category %in% inv              ~ "Site - Investment",
+                                program_area == "LAB"                       ~ "Site - Lab",
+                                disaggregate_category == "HlthSys"          ~ "Above Site - HSS",
+                                disaggregate_category == "ProgMgmt"         ~ "Above Site - Program Managment",
+                                disaggregate_category == "StratInfo"        ~ "Above Site - SI",
+                                disaggregate_category == "Surveillance"     ~ "Above Site - Surveillance")
+      )
+  
+  #aggregate up to mech total (currently one line per PSNU)
+    ea <- ea %>% 
+      group_by(operatingunit, fundingagency_consol, maj_cc) %>% 
+      summarise(fy2017_expenditure = sum(fy17)) %>% 
+      ungroup() %>% 
+      mutate(fy2017_expenditure = round(fy2017_expenditure,0),
+             fundingagency_consol = factor(fundingagency_consol, 
+                                                  levels = c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other"))) 
+  
+  #export
+    write_rds(ea, here("Output", "ea.Rds"))
+  
+  rm(abv, inv, rec, grp)
   
   ## COMPARE
   # codb_ptype %>% 
