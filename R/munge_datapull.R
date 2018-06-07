@@ -35,6 +35,12 @@ library(fs)
       mutate(fundingagency_consol = factor(fundingagency_consol, 
                                             levels = c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other")))
 
+# Identify LTS/STAR OUs ---------------------------------------------------
+    #source: https://www.pepfar.gov/documents/organization/276459.pdf
+    ou_star <- c("Asia Regional Program","Caribbean Region", "Central America Region",
+                 "Central Asia Region", "Angola", "Burma", "Cambodia","Dominican Republic", 
+                 "Ghana", "India", "Indonesia", "Papua New Guinea")
+    
 # COP Matrix --------------------------------------------------------------
 
   #import
@@ -49,7 +55,9 @@ library(fs)
       mutate(MechanismIdentifier = as.character(MechanismIdentifier)) %>% 
       mutate_at(vars(GAP, HVMS), ~ as.double(.)) %>% 
       mutate_if(is.numeric, ~ ifelse(. == 0, NA, .))
-  
+  #star designation
+    copmatrix <- copmatrix %>% 
+      mutate(ou_type = ifelse(OperatingUnit %in% ou_star, "STAR", "LTS"))
   #rename/clean/merge/arrange funding agencies
     #rename & tweak abbreviations for mapping
     copmatrix <- copmatrix %>% 
@@ -63,7 +71,7 @@ library(fs)
     copmatrix <- left_join(copmatrix, agency_mapping, by = "fundingagency_abbr")
     #reorder
     copmatrix <- copmatrix %>% 
-      select(concat, OperatingUnit, MechanismIdentifier, RecordType, COP, fundingagency, 
+      select(concat, OperatingUnit, ou_type, MechanismIdentifier, RecordType, COP, fundingagency, 
              fundingagency_abbr, fundingagency_consol,  fundingagency_3, everything()) 
       
   #data frame for mechanism budget code breakdown, long  
@@ -99,13 +107,14 @@ library(fs)
       rename(OperatingUnit = Operating_Unit,
              fundingagency = Funding_Agency,
              COP = Cycle) %>% 
-      select(-Agency_Abbrev, -Agency_Consolidated)
+      select(-Agency_Abbrev, -Agency_Consolidated) %>% 
+      mutate(ou_type = ifelse(OperatingUnit %in% ou_star, "STAR", "LTS"))
   
   #merge
     staffing <- left_join(staffing, agency_mapping, by = "fundingagency")
   #reorder
     staffing <- staffing %>% 
-      select(OperatingUnit, Cycle, fundingagency, fundingagency_abbr, 
+      select(OperatingUnit, ou_type,Cycle, fundingagency, fundingagency_abbr, 
              fundingagency_consol,  fundingagency_3, everything()) 
   
   #clean names for tables/viz
@@ -136,10 +145,14 @@ library(fs)
   
   #merge
     codb <- left_join(codb, agency_mapping, by = "fundingagency")
+  
+  #star designation
+    codb <- codb %>% 
+      mutate(ou_type = ifelse(OperatingUnit %in% ou_star, "STAR", "LTS")) 
     
   #reorder
     codb <- codb %>% 
-      select(OperatingUnit, COP, fundingagency, fundingagency_abbr, 
+      select(OperatingUnit, ou_type, COP, fundingagency, fundingagency_abbr, 
              fundingagency_consol,  fundingagency_3, everything()) 
   #export
     write_rds(codb, here("Output", "codb.Rds"))
@@ -176,6 +189,10 @@ library(fs)
   #merge
     codb_ptype <- left_join(codb_ptype, agency_mapping, by = "fundingagency")
   
+  #star designation
+    codb_ptype <- codb_ptype %>% 
+      mutate(ou_type = ifelse(OperatingUnit %in% ou_star, "STAR", "LTS")) 
+    
   #export
     write_rds(codb_ptype, here("Output", "codb_ptype.Rds"))
   
@@ -240,11 +257,15 @@ library(fs)
       mutate(fy2017_expenditure = round(fy2017_expenditure,0),
              fundingagency_consol = factor(fundingagency_consol, 
                                                   levels = c("USAID", "HHS/CDC", "PC", "State", "DOD", "HHS/Other"))) 
-  
+  #star designation
+    ea <- ea %>% 
+      mutate(ou_type = ifelse(operatingunit %in% ou_star, "STAR", "LTS")) %>%
+      select(operatingunit, ou_type, everything())
+    
   #export
     write_rds(ea, here("Output", "ea.Rds"))
   
-  rm(abv, inv, rec, grp)
+  rm(abv, inv, rec, grp, ou_star)
   
   ## COMPARE
   # codb_ptype %>% 
