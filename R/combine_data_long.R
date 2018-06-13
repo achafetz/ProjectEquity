@@ -1,5 +1,9 @@
+
 #Convert long and combine
 
+  #dependencies
+    library(tidyverse)
+    
   #import
     copmatrix <- read_rds("Output/copmatrix.Rds")
   
@@ -25,9 +29,10 @@
   
   #drop unnecessary columns
     codb_lng <- codb %>% 
+      filter(FundingSource != "Total non-CODB") %>% 
       select(-c(fundingagency, fundingagency_abbr, fundingagency_3, FundingSource, TechnicalArea, 
-                Acronym, ItemDescription, PreFundingAmount, OnHoldAmount, FTE, PipelineAsOfEndOfQ1)) %>% 
-      filter(CostType != "Total non-CODB")
+                Acronym, ItemDescription, PreFundingAmount, OnHoldAmount, FTE, PipelineAsOfEndOfQ1))
+      
   #aggregate to cut row count
     codb_lng <- codb_lng %>% 
       group_by(OperatingUnit, ou_type, COP, fundingagency_consol, BudgetCode, CostType) %>% 
