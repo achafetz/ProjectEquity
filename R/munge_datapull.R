@@ -24,7 +24,7 @@ library(fs)
 # Cleaned Agency Names Mapping --------------------------------------------
 
   #import
-    agency_mapping <- read_excel(here("Data", "COP16-18 Data 2018-08-02.xlsx"), sheet = "Reference", range = "A1:D24")
+    agency_mapping <- read_excel(here("Data", "COP16-18 Data 2018-08-06 v2.xlsx"), sheet = "Reference", range = "A1:D24")
   
   #rename
     agency_mapping <- agency_mapping %>% 
@@ -44,7 +44,7 @@ library(fs)
 # COP Matrix --------------------------------------------------------------
 
   #import
-    copmatrix <- read_excel(here("Data", "COP16-18 Data 2018-08-02.xlsx"), sheet = "COP Matrix Data", skip = 2)
+    copmatrix <- read_excel(here("Data", "COP16-18 Data 2018-08-06 v2.xlsx"), sheet = "COP Matrix Data", skip = 2)
   
   #rename header without spaces or dashes
     names(copmatrix) <- gsub(" ", "", names(copmatrix))
@@ -85,7 +85,7 @@ library(fs)
 # Staffing Data -----------------------------------------------------------
 
   #import
-    staffing <- read_excel(here("Data", "COP16-18 Data 2018-08-02.xlsx"), sheet = "Staffing Data", skip = 2)
+    staffing <- read_excel(here("Data", "COP16-18 Data 2018-08-06 v2.xlsx"), sheet = "Staffing Data", skip = 2)
   
   #rename header without spaces or dashes
     names(staffing) <- gsub("%", "pct", names(staffing))
@@ -128,7 +128,7 @@ library(fs)
 # CODB --------------------------------------------------------------------
 
   #import
-    codb <- read_excel(here("Data", "COP16-18 Data 2018-08-02.xlsx"), sheet = "CODB Data ", skip = 3)
+    codb <- read_excel(here("Data", "COP16-18 Data 2018-08-06 v2.xlsx"), sheet = "CODB Data ", skip = 3)
   
   #rename header without spaces or dashes
     names(codb) <- gsub(" |\\)", "", names(codb))
