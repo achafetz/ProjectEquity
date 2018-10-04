@@ -29,6 +29,7 @@
   
   #drop unnecessary columns
     codb_lng <- codb %>% 
+      filter(FundingSource != "Total non-CODB") %>%
       select(-c(fundingagency, fundingagency_abbr, fundingagency_3, FundingSource, TechnicalArea, 
                 Acronym, ItemDescription, PreFundingAmount, OnHoldAmount, FTE, PipelineAsOfEndOfQ1))
       
