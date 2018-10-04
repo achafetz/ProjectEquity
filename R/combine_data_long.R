@@ -29,7 +29,6 @@
   
   #drop unnecessary columns
     codb_lng <- codb %>% 
-      filter(FundingSource != "Total non-CODB") %>% 
       select(-c(fundingagency, fundingagency_abbr, fundingagency_3, FundingSource, TechnicalArea, 
                 Acronym, ItemDescription, PreFundingAmount, OnHoldAmount, FTE, PipelineAsOfEndOfQ1))
       
@@ -38,13 +37,30 @@
       group_by(OperatingUnit, ou_type, COP, fundingagency_consol, BudgetCode, CostType) %>% 
       summarise_at(vars(COPAmount, AppliedPipeline), ~ sum(., na.rm = TRUE)) %>% 
       ungroup()
+    
+  #fix issue around pipeline duplication of CostType for every budget code it applies to
+    codb_lng_pipeline <- codb_lng %>% 
+      select(-c(BudgetCode, COPAmount)) %>%  
+      unique() %>% 
+      group_by(OperatingUnit, ou_type, COP, fundingagency_consol, CostType) %>% 
+      summarise(AppliedPipeline = max(AppliedPipeline, na.rm = TRUE)) %>%
+      ungroup() %>% 
+      filter(AppliedPipeline!=0)
+    
+  #append accurate pipeline back on, removing 
+    codb_lng <- codb_lng %>% 
+      select(-AppliedPipeline) %>% 
+      filter(COPAmount != 0) %>% 
+      bind_rows(codb_lng_pipeline)
+    rm(codb_lng_pipeline)
+      
   #create a total column
     codb_lng <- codb_lng %>% 
+      mutate_at(vars(COPAmount, AppliedPipeline), ~ ifelse(is.na(.), 0, .)) %>% #convert NAs to 0 for addding
       mutate(total_budget = COPAmount + AppliedPipeline,
              source = "CODB Data",
              RecordType = "Management and Operations") %>% 
       filter(total_budget != 0)
-    
     rm(codb)
     
   #import
