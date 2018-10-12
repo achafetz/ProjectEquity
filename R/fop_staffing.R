@@ -3,7 +3,7 @@
 library(tidyverse)
 library(readxl)
 
-staffing_reg <- read_xlsx("Data/Regionalization Staffing Matrix 20181004.xlsx", sheet = "PEPFAR-Funded Staff", skip = 1)
+staffing_reg <- read_xlsx("Data/Regionalization Staffing Matrix 20181011.xlsx", sheet = "PEPFAR-Funded Staff", skip = 1)
 glimpse(staffing_reg)
 
 #remove example from dataset
@@ -49,7 +49,7 @@ staffing_reg_lng <- staffing_reg_lng %>%
 
 staffing_reg_rollup <- staffing_reg %>% 
   mutate(fte_total = `Prorated Administrative LOE` + `Prorated Leadership LOE` + `Prorated Management LOE` + `Prorated Technical LOE`) %>% 
-  select(-starts_with("Prorated"), ) %>% 
+  select(-starts_with("Prorated")) %>% 
   mutate(staff = 1,
          recordtype = "Staffing - Budget Managed")
 
