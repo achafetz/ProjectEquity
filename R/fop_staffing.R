@@ -20,7 +20,7 @@ staffing_reg <- staffing_reg %>%
   mutate(recordtype = "Staffing - FTEs",
          source = "Regionalization Staffing Matrix")
 
-west_african <- c("Liberia", "Mali", "Sierra Leone", "Senegal", "West Africa Regional")
+west_african <- c("Ghana","Liberia", "Mali", "Sierra Leone", "Senegal", "West Africa Regional")
 
 staffing_reg <- staffing_reg %>% 
   filter(operatingunit %in% west_african)
